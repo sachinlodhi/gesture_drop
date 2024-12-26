@@ -49,6 +49,7 @@ def restore_and_maximize_window(window_title):
         print(f"Error handling window: {e}")
         return None
 
+# take the screenshot
 def take_screenshot(window):
     x, y = window.left, window.top
     width, height = window.width, window.height
@@ -64,22 +65,16 @@ window_title = "hand_drop"
 window = restore_and_maximize_window(window_title)
 take_screenshot(window=window)
 
+# Now open the camera for image superimposition
+cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
+cap = cv2.VideoCapture(0)
 
+while True:
+    _, frame = cap.read()
+    print(frame.shape)
+    cv2.imshow("frame", frame)
+    if cv2.waitKey(1) == ord('q'):
+        break
 
-
-# # now taking screenshots
-# screenshot = pyautogui.screenshot(region=(x,y,width, height))
-# print(type(screenshot))
-# screenshot.show()
-# # cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-# # cap = cv2.VideoCapture(0)
-
-# # while True:
-# #     _, frame = cap.read()
-# #     print(frame.shape)
-# #     cv2.imshow("frame", frame)
-# #     if cv2.waitKey(1) == ord('q'):
-# #         break
-
-# # cap.release()
-# # cv2.destroyAllWindows()
+cap.release()
+cv2.destroyAllWindows()
