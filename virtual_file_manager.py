@@ -1,3 +1,5 @@
+# This file works on the ASUS laptop and has the only functionality that it can open the minimized window
+
 import pywinctl as wc
 import cv2
 import subprocess
