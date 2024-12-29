@@ -6,7 +6,7 @@ import numpy as np
 import time
 import glob
 import mediapipe as mp
-
+import pytesseract 
 
 # Now open the camera for image superimposition
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
@@ -73,13 +73,15 @@ def gesture_detection(hand_landmarks):
 
 
 
-'''function to get the selected area, process it using OCR and extract the filename'''
+'''function to get the selected area, process it using Pytesseract OCR and extract the filename'''
     
 def get_filenames(img, area_pts):
+    
     ''' section to extract the roi'''
     # creating new black and white image with curve that will serve as mask to extract roi
     img_shape = img.shape[:2]
     new_img = np.zeros(img_shape, dtype=np.uint8)
+    file_list = []
     # setting boundary to white
     for pt in area_pts:
         x, y = pt 
@@ -101,7 +103,19 @@ def get_filenames(img, area_pts):
         x, y, w, h = cv2.boundingRect(largest_contour)
         roi = masked_img[y:y+h, x:x+w] 
 
-    return roi
+        scale_factor = 2
+        height, width = roi.shape[:2]
+        new_height, new_width = int(height * scale_factor), int(width * scale_factor)
+        zoomed_roi = cv2.resize(roi, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+        '''section to get the text using Pytesseract OCR'''
+        # text = pytesseract.image_to_string(roi)
+        custom_config = r'--psm 6 --oem 3' 
+        text = pytesseract.image_to_string(zoomed_roi, config=custom_config)
+        print(f"Detected file names: {text}")
+        file_list = text.split(" ")
+
+    
+    return [roi,file_list] 
     
     
 
@@ -205,9 +219,11 @@ with mp_hands.Hands(
                     elif gesture_detection(hand_landmarks) == 2: # if 2 fingers are shown then get the cutout
                         
                         
-                        selected_files = get_filenames(img=file_manager, area_pts = points_file_manager)
+                        ocr_data = get_filenames(img=file_manager, area_pts = points_file_manager)
                         # print(selected_files)
-                        cv2.imshow("selected area", selected_files)
+                        roi = ocr_data[0]
+                        cv2.imshow("selected area", roi)
+                        print(f"Files list {ocr_data[1]}")
 
                     # iterate over the list to draw over the image
                     for idx in range(1, len(points_to_draw)):
@@ -225,11 +241,11 @@ with mp_hands.Hands(
                         
                         # get the intermediate points on the line connecting pt1 and pt2
                         line_points = get_line_points(start=file_manager_pt1, end=file_manager_pt2)
-                        print("appending", len(points_file_manager))
+                        # print("appending", len(points_file_manager))
                         for i in line_points:
                             points_file_manager.append(i)
-                        print("appended", len(points_file_manager))
-                
+                        # print("appended", len(points_file_manager))
+
                    
 
                 except Exception as e:
