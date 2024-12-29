@@ -47,11 +47,18 @@ def gesture_detection(hand_landmarks):
     # print(index_tip.z)
 
     ''' let us analyze if the palm is being shown. The hypothesis is that the y coordiante of the each fingers TIP will be less than PIP in open position'''
-    # print(index_pip.y>index_tip.y, mid_pip.y>mid_tip.y, ring_pip.y>ring_tip.y, pinky_pip.y>pinky_tip.y)
+    # print(index_pip.y>index_tip.y, mid_pip.y<mid_tip.y, ring_pip.y<ring_tip.y, pinky_pip.y<pinky_tip.y)
+    # all fingers open
     if index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y>ring_tip.y and pinky_pip.y>pinky_tip.y:
         return True
-    else:
+    # fist option
+    elif index_pip.y<index_tip.y and mid_pip.y<mid_tip.y and ring_pip.y<ring_tip.y and pinky_pip.y<pinky_tip.y:
+        return True
+    # index fingers are being shown
+    elif index_pip.y>index_tip.y and mid_pip.y<mid_tip.y and ring_pip.y<ring_tip.y and pinky_pip.y<pinky_tip.y: # if only index finger is shown
         return False
+    # else:
+    #     return False
 
     # print(index_finger_mcp.y, index_finger_tip.y)
 
@@ -82,15 +89,15 @@ with mp_hands.Hands(
                 # getting the tips of the fingers and wrist
                 index_tip = landmarks_extraction(hand_landmarks)
 
-
                 x = index_tip.x 
                 y = index_tip.y
+                cv2.circle(img=file_manager,center=(int(abs(1-x) * file_manager_width), int(y * file_manager_height)), radius=5, color=(0,0,255), thickness=-1 )
                 # append x,y to the list to draw things
                 points_to_draw.append((x,y))
                 try: # check if the palm is being shown
                     if gesture_detection(hand_landmarks):
                         points_to_draw.clear()
-                        print("True")
+                        print("Tru")
                     # iterate over the list to draw over the image
                     for idx in range(1, len(points_to_draw)):
                         # print(points_to_draw[idx])
