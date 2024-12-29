@@ -1,3 +1,4 @@
+''' This file is going to work on the senders side to select files'''
 import subprocess
 from mss import mss
 import cv2
