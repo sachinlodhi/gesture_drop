@@ -31,7 +31,7 @@ def landmarks_extraction(hand_landmarks):
     # print(index_finger_mcp.y, index_finger_tip.y)
     return index_finger_tip
 
-# function to detect the gesture so can clean the selection. returns true if the palm is being shown
+''' function to detect the gesture i.e. palm, fist, index finger, index+middle finger detection'''
 def gesture_detection(hand_landmarks):
     # getting details of roi landmarks
     wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
@@ -44,13 +44,9 @@ def gesture_detection(hand_landmarks):
     ring_pip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP]
     pinky_tip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP]
     pinky_pip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP]
-    # print(wrist.z, round(thumb_tip.z,3), round(index_tip.z,3), round(mid_tip.z,3), round(ring_tip.z,3), round(pinky_tip.z,3))
-    # print(index_tip.z)
-
-    ''' let us analyze if the palm is being shown. The hypothesis is that the y coordiante of the each fingers TIP will be less than PIP in open position'''
-    # print(index_pip.y>index_tip.y, mid_pip.y<mid_tip.y, ring_pip.y<ring_tip.y, pinky_pip.y<pinky_tip.y)
-    
-    '''codes
+   
+    ''' let us analyze if the palm is being shown. The hypothesis is that the y coordiante of the each fingers TIP will be less than PIP in open position
+    codes
     -1: palm,
     0: fist,
     1: index,
@@ -70,14 +66,10 @@ def gesture_detection(hand_landmarks):
         return 2
 
 
-
-
-
 '''function to get the selected area, process it using Pytesseract OCR and extract the filename'''
-    
 def get_filenames(img, area_pts):
+    '''section to extract the roi'''
     
-    ''' section to extract the roi'''
     # creating new black and white image with curve that will serve as mask to extract roi
     img_shape = img.shape[:2]
     new_img = np.zeros(img_shape, dtype=np.uint8)
@@ -103,37 +95,29 @@ def get_filenames(img, area_pts):
         x, y, w, h = cv2.boundingRect(largest_contour)
         roi = masked_img[y:y+h, x:x+w] 
 
+        # zooming in to get the best OCR results
         scale_factor = 2
         height, width = roi.shape[:2]
         new_height, new_width = int(height * scale_factor), int(width * scale_factor)
         zoomed_roi = cv2.resize(roi, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+        
         '''section to get the text using Pytesseract OCR'''
-        # text = pytesseract.image_to_string(roi)
         custom_config = r'--psm 6 --oem 3' 
         text = pytesseract.image_to_string(zoomed_roi, config=custom_config)
         print(f"Detected file names: {text}")
+        text
         file_list = text.split(" ")
-
     
     return [roi,file_list] 
     
     
 
 '''function to get the list of the connecting points between two points pt1<->pt2'''
-def get_line_points(start, end):
-    """
-    Get all points on a line between two points using Bresenham's algorithm.
+def get_line_points(start, end): # tuple, tuple and returns list of tuples
     
-    Parameters:
-        start: tuple of (x1, y1)
-        end: tuple of (x2, y2)
-    
-    Returns:
-        List of tuples containing (x, y) coordinates of all points on the line
-    """
     x1, y1 = start
     x2, y2 = end
-    
+
     points = []
     dx = abs(x2 - x1)
     dy = abs(y2 - y1)
