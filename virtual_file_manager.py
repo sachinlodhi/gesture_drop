@@ -8,6 +8,8 @@ import glob
 import mediapipe as mp
 import pytesseract 
 import re
+import threading
+import sender
 
 # Now open the camera for image superimposition
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
@@ -167,8 +169,9 @@ def get_line_points(start, end): # tuple, tuple and returns list of tuples
 
 points_to_draw = []  # stores the mediapipe relative points
 points_file_manager = [] # stores the points to be drawn on the file_manager
-
-
+selected_files = [] # stores the filenames
+sending_status = False # to track if the file sending has been started
+main_path = "/home/sachin/Desktop/all/projects/tyler/" # currently sending files from here
 with mp_hands.Hands(
     static_image_mode=False,
     model_complexity = 1,
@@ -201,7 +204,7 @@ with mp_hands.Hands(
                 # append x,y to the list to draw things
                 points_to_draw.append((x,y))
                 try: 
-                    if gesture_detection(hand_landmarks) in [0,-1]: # if palm  or first is being shown then clear every points in each list
+                    if gesture_detection(hand_landmarks) == -1: # if palm  or first is being shown then clear every points in each list
                         points_to_draw.clear()
                         points_file_manager.clear()
                         print("Tru")
@@ -212,6 +215,13 @@ with mp_hands.Hands(
                         roi = ocr_data[0]
                         cv2.imshow("selected area", roi)
                         print(f"Files list {ocr_data[1]}")
+                        selected_files = ocr_data[1]
+                    elif gesture_detection(hand_landmarks) == 0 and (not sending_status): # if the fist is shown then it means user is grabbing files and start sending process but check the sending status_flag too
+                        print(f"size of selected file : {len(selected_files)}: {selected_files}")
+                        t1 = threading.Thread(target=sender.sending, args=(main_path, selected_files,))
+                        t1.start()
+                        print("Started Sending")
+                        sending_status = True
 
                     # iterate over the list to draw over the image
                     for idx in range(1, len(points_to_draw)):
