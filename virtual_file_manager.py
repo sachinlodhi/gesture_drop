@@ -10,11 +10,13 @@ import pytesseract
 import re
 import threading
 import sender
+import random
+import pyautogui
 
 # Now open the camera for image superimposition
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-cv2.namedWindow("file manager", cv2.WINDOW_NORMAL)
-cv2.namedWindow("selected area", cv2.WINDOW_NORMAL)
+# cv2.namedWindow("file manager", cv2.WINDOW_NORMAL)
+# cv2.namedWindow("selected area", cv2.WINDOW_NORMAL)
 cap = cv2.VideoCapture(0)
 
 # loading file manager screen
@@ -54,6 +56,7 @@ def gesture_detection(hand_landmarks):
     0: fist,
     1: index,
     2: 2 fingers open
+    3: 3 fingers open for screenshot
     '''
     # palm
     if index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y>ring_tip.y and pinky_pip.y>pinky_tip.y:
@@ -67,6 +70,8 @@ def gesture_detection(hand_landmarks):
     # detect index and middle finger open to proceed with the selected files
     elif index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y<ring_tip.y and pinky_pip.y<pinky_tip.y: 
         return 2
+    elif index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y>ring_tip.y and pinky_pip.y<pinky_tip.y: 
+        return 3
 
 
 '''function to get the selected area, process it using Pytesseract OCR and extract the filename'''
@@ -171,7 +176,9 @@ points_to_draw = []  # stores the mediapipe relative points
 points_file_manager = [] # stores the points to be drawn on the file_manager
 selected_files = [] # stores the filenames
 sending_status = False # to track if the file sending has been started
-main_path = "/home/sachin/Desktop/all/projects/tyler/" # currently sending files from here
+main_path = "/home/sachin/Desktop/all/projects/hand_drop/sending_folder/" # currently sending files from here
+screenshot_taken = False
+file_manager_canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 with mp_hands.Hands(
     static_image_mode=False,
     model_complexity = 1,
@@ -180,10 +187,10 @@ with mp_hands.Hands(
     max_num_hands = 1) as hands:
     
     while True:
+        
         _, frame = cap.read()
-        # For now let us stick to the constant screenshot and we will fix the screenshot process later
-        file_manager = cv2.imread("manager_screen.png")
-  
+        file_manager = file_manager_canvas.copy()
+
         frame_height, frame_width = frame.shape[0], frame.shape[1]
         file_manager_height, file_manager_width = file_manager.shape[0], file_manager.shape[1]
         frame.flags.writeable = False
@@ -200,7 +207,10 @@ with mp_hands.Hands(
                 x = index_tip.x 
                 y = index_tip.y
                 # circle to track the hand movement
-                cv2.circle(img=file_manager,center=(int(abs(1-x) * file_manager_width), int(y * file_manager_height)), radius=5, color=(0,0,255), thickness=-1 )
+                random_b = random.randint(0,256)
+                random_g = random.randint(0,256)
+                random_r = random.randint(0,256)
+                cv2.circle(img=file_manager,center=(int(abs(1-x) * file_manager_width), int(y * file_manager_height)), radius=6, color=(random_b, random_g, random_r), thickness=-1 )
                 # append x,y to the list to draw things
                 points_to_draw.append((x,y))
                 try: 
@@ -222,6 +232,16 @@ with mp_hands.Hands(
                         t1.start()
                         print("Started Sending")
                         sending_status = True
+                    elif gesture_detection(hand_landmarks) == 3 and not screenshot_taken: # see if user is taking screenshot
+                        
+                        screenshot = pyautogui.screenshot()# take screenshot
+                        # Convert to OpenCV format
+                        screenshot = np.array(screenshot)
+                        screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+                        file_manager_canvas = screenshot.copy()
+                        screenshot_taken = True
+                        
+
 
                     # iterate over the list to draw over the image
                     for idx in range(1, len(points_to_draw)):
@@ -234,8 +254,8 @@ with mp_hands.Hands(
                         file_manager_pt2 = (int(abs(1-points_to_draw[idx-1][0])*file_manager_width), int(points_to_draw[idx-1][1] * file_manager_height))
                         points_file_manager.append(file_manager_pt1)
 
-                        cv2.line(img=frame, pt1= frame_pt1, pt2 = frame_pt2, color=(0, 0, 255), thickness=5)
-                        cv2.line(img=file_manager, pt1= file_manager_pt1, pt2 = file_manager_pt2, color=(0, 0, 255), thickness=5)
+                        cv2.line(img=frame, pt1= frame_pt1, pt2 = frame_pt2, color=(0, 0, 255), thickness=2)
+                        cv2.line(img=file_manager, pt1= file_manager_pt1, pt2 = file_manager_pt2, color=(0, 0, 255), thickness=2)
                         
                         # get the intermediate points on the line connecting pt1 and pt2
                         line_points = get_line_points(start=file_manager_pt1, end=file_manager_pt2)
@@ -252,7 +272,8 @@ with mp_hands.Hands(
 
         
         cv2.imshow("frame", cv2.flip(frame,1))
-        cv2.imshow("file manager", file_manager)
+        if screenshot_taken: # show file manager only if user takes screenshot. This will help to select the files.
+            cv2.imshow("file manager", file_manager)
         if cv2.waitKey(1) == ord('q'):
             break
 
