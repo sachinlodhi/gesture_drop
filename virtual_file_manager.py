@@ -109,16 +109,10 @@ def get_filenames(img, area_pts):
         print(f"Detected file names: {text}")
         
         text = text.split("\n") # gives the list of two lines and first one contains the file names
-        text = [i for i in text if "." in i and len(i)>2]
+        text = text[0].split(" ") # this will make a list with the elements of the valid and invalid file name
+        print(f" After splitting : {text}")
 
-        cleaned_file_list = text[0].split(" ")
-        # file_list = text[0].split("\n")
-        # # using regex to get the valid filenames
-        # cleaned_file_list = []
-        # for i in file_list:
-        #     if re.match("^[a-zA-Z0-9_.-]+\.[a-zA-Z0-9]+$", i):
-        #         cleaned_file_list.append(i)
-
+        cleaned_file_list = [i for i in text if ("." in i and len(i)>2)]
     
     return [roi,cleaned_file_list] 
 
@@ -213,8 +207,6 @@ with mp_hands.Hands(
                         print("Tru")
                     
                     elif gesture_detection(hand_landmarks) == 2: # if 2 fingers are shown then get the cutout
-                        
-                        
                         ocr_data = get_filenames(img=file_manager, area_pts = points_file_manager)
                         # print(selected_files)
                         roi = ocr_data[0]
