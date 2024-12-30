@@ -7,6 +7,7 @@ import time
 import glob
 import mediapipe as mp
 import pytesseract 
+import re
 
 # Now open the camera for image superimposition
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
@@ -104,12 +105,19 @@ def get_filenames(img, area_pts):
         '''section to get the text using Pytesseract OCR'''
         custom_config = r'--psm 6 --oem 3' 
         text = pytesseract.image_to_string(zoomed_roi, config=custom_config)
+        text = text.rstrip()
         print(f"Detected file names: {text}")
-        text
+         
         file_list = text.split(" ")
+        # using regex to get the valid filenames
+        cleaned_file_list = []
+        for i in file_list:
+            if re.match("^[a-zA-Z0-9_.-]+\.[a-zA-Z0-9]+$", i):
+                cleaned_file_list.append(i)
+
     
-    return [roi,file_list] 
-    
+    return [roi,cleaned_file_list] 
+
     
 
 '''function to get the list of the connecting points between two points pt1<->pt2'''
