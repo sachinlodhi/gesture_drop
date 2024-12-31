@@ -206,7 +206,7 @@ with mp_hands.Hands(
 
                 x = index_tip.x 
                 y = index_tip.y
-                # circle to track the hand movement
+                # circle to track the hand movement with random colors to get the flashing effect 
                 random_b = random.randint(0,256)
                 random_g = random.randint(0,256)
                 random_r = random.randint(0,256)
