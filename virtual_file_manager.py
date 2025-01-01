@@ -12,6 +12,7 @@ import threading
 import sender
 import random
 import pyautogui
+from pathvalidate import is_valid_filename, sanitize_filename
 
 # Now open the camera for image superimposition
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
@@ -21,7 +22,8 @@ cap = cv2.VideoCapture(0)
 
 # loading file manager screen
 # file_manager = cv2.imread("manager_screen.png")
-files_list= glob.glob('/home/sachin/Desktop/all/projects/tyler/*.*')
+# files_list= glob.glob('/home/sachin/Desktop/all/projects/tyler/*.*')
+main_path = "/home/sachin/Desktop/all/projects/tyler/"
 
 # some object intializations
 mp_drawing = mp.solutions.drawing_utils
@@ -70,6 +72,7 @@ def gesture_detection(hand_landmarks):
     # detect index and middle finger open to proceed with the selected files
     elif index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y<ring_tip.y and pinky_pip.y<pinky_tip.y: 
         return 2
+    # for screenshot
     elif index_pip.y>index_tip.y and mid_pip.y>mid_tip.y and ring_pip.y>ring_tip.y and pinky_pip.y<pinky_tip.y: 
         return 3
 
@@ -81,7 +84,7 @@ def get_filenames(img, area_pts):
     # creating new black and white image with curve that will serve as mask to extract roi
     img_shape = img.shape[:2]
     new_img = np.zeros(img_shape, dtype=np.uint8)
-    file_list = []
+    cleaned_file_list = [] # to store the filenames(cleaned)
     # setting boundary to white
     for pt in area_pts:
         x, y = pt 
@@ -116,10 +119,16 @@ def get_filenames(img, area_pts):
         print(f"Detected file names: {text}")
         
         text = text.split("\n") # gives the list of two lines and first one contains the file names
-        text = text[0].split(" ") # this will make a list with the elements of the valid and invalid file name
-        print(f" After splitting : {text}")
-
-        cleaned_file_list = [i for i in text if ("." in i and len(i)>2)]
+        # text = text[0].split(" ") # this will make a list with the elements of the valid and invalid file name
+        print(f" After splitting by newline : {text} and size of list : {len(text)}") 
+        for t in text:
+            print(t)
+            t = t.split(" ")
+            for _ in t:
+                print(_)
+                
+                if is_valid_filename(_) and "." in _:
+                 cleaned_file_list.append(_)
     
     return [roi,cleaned_file_list] 
 
@@ -176,14 +185,13 @@ points_to_draw = []  # stores the mediapipe relative points
 points_file_manager = [] # stores the points to be drawn on the file_manager
 selected_files = [] # stores the filenames
 sending_status = False # to track if the file sending has been started
-main_path = "/home/sachin/Desktop/all/projects/hand_drop/sending_folder/" # currently sending files from here
 screenshot_taken = False
 file_manager_canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 with mp_hands.Hands(
     static_image_mode=False,
     model_complexity = 1,
-    min_detection_confidence = 0.90,
-    min_tracking_confidence = 0.9,
+    min_detection_confidence = 0.70,
+    min_tracking_confidence = 0.7,
     max_num_hands = 1) as hands:
     
     while True:
@@ -228,10 +236,11 @@ with mp_hands.Hands(
                         selected_files = ocr_data[1]
                     elif gesture_detection(hand_landmarks) == 0 and (not sending_status): # if the fist is shown then it means user is grabbing files and start sending process but check the sending status_flag too
                         print(f"size of selected file : {len(selected_files)}: {selected_files}")
-                        t1 = threading.Thread(target=sender.sending, args=(main_path, selected_files,))
-                        t1.start()
-                        print("Started Sending")
-                        sending_status = True
+                        if len(selected_files)>0: # this is to reduce the false fist detection in this case the size of the selected_files list is >0 then only proceed
+                            t1 = threading.Thread(target=sender.sending, args=(main_path, selected_files,))
+                            t1.start()
+                            print("Started Sending")
+                            sending_status = True
                     elif gesture_detection(hand_landmarks) == 3 and not screenshot_taken: # see if user is taking screenshot
                         
                         screenshot = pyautogui.screenshot()# take screenshot
@@ -273,6 +282,7 @@ with mp_hands.Hands(
         
         cv2.imshow("frame", cv2.flip(frame,1))
         if screenshot_taken: # show file manager only if user takes screenshot. This will help to select the files.
+            cv2.namedWindow("file manager", cv2.WINDOW_NORMAL)
             cv2.imshow("file manager", file_manager)
         if cv2.waitKey(1) == ord('q'):
             break
