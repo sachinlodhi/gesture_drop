@@ -2,20 +2,20 @@ import socket
 import time
 import os
 
+
+'''DO NOT FORGET TO PUT YOUR IP RECEIVER IP'''
+
+SERVER_IP = 'PUT_YOUR_IP'
+PORT = 5000
+
 is_sent = False
-# main_path = "/home/sachin/Desktop/all/projects/tyler/"
 def sending(main_path, files_to_send):
     global is_sent
-    
     files_to_send = [main_path+i for i in files_to_send]
     print(f"Files to send in sender function: {files_to_send}")
     while not is_sent:
         time.sleep(1)
         print(f"Sent yet? : {is_sent}")
-
-        SERVER_IP = '10.59.165.117'
-        PORT = 5000
-        # file_to_send = 'L10.pdf'
 
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -66,5 +66,3 @@ def sending(main_path, files_to_send):
             
     print("Exiting Sender Loop!!!")
 
-# if __name__ == "__main__":
-#     sending()
