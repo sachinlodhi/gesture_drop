@@ -6,12 +6,14 @@ is_sent = False
 # main_path = "/home/sachin/Desktop/all/projects/tyler/"
 def sending(main_path, files_to_send):
     global is_sent
+    
     files_to_send = [main_path+i for i in files_to_send]
+    print(f"Files to send in sender function: {files_to_send}")
     while not is_sent:
         time.sleep(1)
-        print(f"Still running with: {is_sent}")
+        print(f"Sent yet? : {is_sent}")
 
-        SERVER_IP = '192.168.1.95'
+        SERVER_IP = '10.59.165.117'
         PORT = 5000
         # file_to_send = 'L10.pdf'
 
@@ -62,7 +64,7 @@ def sending(main_path, files_to_send):
             client_socket.close()
             time.sleep(5)  # Wait before retrying
             
-    print("All files sent!!!")
+    print("Exiting Sender Loop!!!")
 
 # if __name__ == "__main__":
 #     sending()
