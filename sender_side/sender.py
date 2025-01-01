@@ -8,7 +8,7 @@ import os
 SERVER_IP = "PUT_YOUR_IP"
 PORT = 5000
 
-is_sent = False # to check if the file has been sent
+is_sent = False  # to check if the file has been sent
 
 
 def sending(main_path, files_to_send):
@@ -18,7 +18,6 @@ def sending(main_path, files_to_send):
     while not is_sent:
         time.sleep(1)
         print(f"Sent yet? : {is_sent}")
-
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             client_socket.connect((SERVER_IP, PORT))
@@ -33,6 +32,8 @@ def sending(main_path, files_to_send):
                 if not os.path.isfile(file_to_send):
                     print(f"Error: File '{file_to_send}' not found. Skipping.")
                     continue
+
+                # sending the file metadata(name) and content
                 # Send file name length as 4 bytes
                 file_name_bytes = file_to_send.encode("utf-8")
                 client_socket.send(len(file_name_bytes).to_bytes(4, byteorder="big"))
