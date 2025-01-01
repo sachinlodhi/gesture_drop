@@ -81,30 +81,6 @@ with mp_hands.Hands(
                     is_open = True
                     t1 = threading.Thread(target = receiver.receive)
                     t1.start()
-                
-                
-                # x_data.append(iteration)
-                # y_data.append(data)
-                # iteration += 1
-                # avg = sum(y_data[-10:])/10 # based on last 10 entries to know if it is open or close
-                
-                # if avg<10 and is_open: # fixed threshold for now
-                #     print("CLOSE")
-                #     is_open = False
-                    
-                # elif avg>10 and is_open == False:
-                #     print("OPEN")
-                #     is_open = True
-                
-                # old_val = data
-            
-
-                # # Adjust plot limits dynamically
-                # ax.set_xlim(0, max(100, iteration))
-                # ax.set_ylim(0, max(0, max(y_data)))
-                # line.set_data(x_data, y_data)
-                # plt.draw()
-                # plt.pause(0.01)
                
                 mp_drawing.draw_landmarks(
                 frame,
@@ -112,9 +88,6 @@ with mp_hands.Hands(
                 mp_hands.HAND_CONNECTIONS,
                 mp_drawing_styles.get_default_hand_landmarks_style(),
                 mp_drawing_styles.get_default_hand_connections_style())
-
-
-
         cv2.imshow("frame", cv2.flip(frame,1))
 
         if cv2.waitKey(1) == ord('q'):
