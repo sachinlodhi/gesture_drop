@@ -1,4 +1,13 @@
-''' This file is going to work on the sender side to select files'''
+''' This is sender side script. What it does:
+1. Opens the camera
+2. Analyse hand landmarks.
+3. Allows to take screenshot of the file manager(show three fingers).
+4. Allows to hightlight multiple files on the taken screenshot by hand gesture(use index finger).
+5. Allows to confirm those selected files to send(use index+middle finger).
+6. Grab those files(make grabbing gesture.)
+7. On the receiver side show this grabbed hand(fist) and then open it.
+8. Done.
+'''
 import subprocess
 from mss import mss
 import cv2
@@ -9,7 +18,7 @@ import mediapipe as mp
 import pytesseract 
 import re
 import threading
-import sender_side.sender as sender
+import sender
 import random
 import pyautogui
 from pathvalidate import is_valid_filename, sanitize_filename
