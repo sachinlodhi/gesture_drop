@@ -9,7 +9,7 @@ saving_dir = "received_files/"
 
 
 def receive():
-    # accept gloabl onnnections
+    # accept gloabl onnnections from all the ip addresses 
     HOST = "0.0.0.0"
     PORT = 5000
 
