@@ -29,10 +29,6 @@ cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 # cv2.namedWindow("file manager", cv2.WINDOW_NORMAL)
 # cv2.namedWindow("selected area", cv2.WINDOW_NORMAL)
 cap = cv2.VideoCapture(0)
-
-# loading file manager screen
-# file_manager = cv2.imread("manager_screen.png")
-# files_list= glob.glob('/home/sachin/Desktop/all/projects/tyler/*.*')
 main_path = "/home/sachin/Desktop/all/projects/tyler/"
 
 # some object intializations
@@ -40,19 +36,14 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
-
 # function to extract the top of the index finger and draw it
 def landmarks_extraction(hand_landmarks):
-
     index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-
     # print(index_finger_mcp.y, index_finger_tip.y)
     return index_finger_tip
 
 
 """ function to detect the gesture i.e. palm, fist, index finger, index+middle finger detection"""
-
-
 def gesture_detection(hand_landmarks):
     # getting details of roi landmarks
     wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
@@ -117,8 +108,6 @@ def gesture_detection(hand_landmarks):
 
 
 """function to get the selected area, process it using Pytesseract OCR and extract the filename"""
-
-
 def get_filenames(img, area_pts):
     """section to extract the roi"""
 
@@ -181,8 +170,6 @@ def get_filenames(img, area_pts):
 
 
 """function to get the list of the connecting points between two points pt1<->pt2"""
-
-
 def get_line_points(start, end):  # tuple, tuple and returns list of tuples
 
     x1, y1 = start
@@ -226,12 +213,12 @@ def get_line_points(start, end):  # tuple, tuple and returns list of tuples
 
     return points
 
-
+# some variables to store the status and intermediate data
 points_to_draw = []  # stores the mediapipe relative points
 points_file_manager = []  # stores the points to be drawn on the file_manager
 selected_files = []  # stores the filenames
 sending_status = False  # to track if the file sending has been started
-screenshot_taken = False
+screenshot_taken = False # checks if the screenshot has been take 
 file_manager_canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 with mp_hands.Hands(
     static_image_mode=False,
@@ -240,7 +227,6 @@ with mp_hands.Hands(
     min_tracking_confidence=0.7,
     max_num_hands=1,
 ) as hands:
-
     while True:
 
         _, frame = cap.read()
