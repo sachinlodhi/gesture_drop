@@ -17,17 +17,6 @@ Gesture Drop allows you to transfer files between computers on the same local ne
 - Real-time hand gesture recognition
 - Local network file transfer
 
-## Project Structure
-
-GESTURE_DROP [GITHUB]
-├── receiver_side/
-│   ├── gesture_receive.py
-│   └── receiver.py
-├── sender_side/
-│   ├── gesture_send.py
-│   └── sender.py
-└── requirements.txt
-
 ## Prerequisites
 
 - Both sender and receiver must be on the same local network
